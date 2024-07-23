@@ -39,6 +39,13 @@ new_df = new_df.dropna()
 
 new_df.info()
 
+#for index, row in df.iterrows():
+#    if not pd.to_numeric(row['Fahrtnummer'], errors='coerce'):
+#        print('Fahrtnummer ist nicht numerisch ' + row['Fahrtnummer'])
+#    elif not pd.to_numeric(row['Zug id'], errors='coerce'):
+#        print('Zug id ist nicht numerisch: ' + row['Zug id'])
+#
+
 #TODO in Minuten!
 new_df['Reisezeit'] = (new_df['Ankunftszeit']-new_df['Abfahrtszeit']).astype('timedelta64[s]')
 print(new_df['Reisezeit'])
@@ -56,4 +63,3 @@ print(gesamtzahl_df)
 # store to sqlite
 conn = sqlite3.connect('zugfahrten.sqlite')
 new_df.to_sql('zugfahrten', conn, if_exists='replace', index=False)
-bla = pd.read_sql('select * from zugfahrten', conn)
