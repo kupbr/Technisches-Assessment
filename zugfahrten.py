@@ -2,63 +2,173 @@ import pandas as pd
 import numpy as np
 import sqlite3 
 import os
-current_directory = os.getcwd()
-print(current_directory) 	
+import logging
+
+
+
+logging.basicConfig(
+    filename="zugfahrten.log",
+    encoding="utf-8",
+    filemode="a",
+    format="{asctime} - {levelname} - {message}",
+    style="{",
+    datefmt="%Y-%m-%d %H:%M", 
+    level=logging.INFO)
+
+logging.info('Loading zugfahrten.csv')
+
 os.chdir('C:/Users/morsx/Documents/docs-archive/Bewerbung 2024/ÖBB IT Lösungsentwickler Schwerpunkt Data Engineering/Technisches Assessment')
-df = pd.read_csv('zugfahrten.csv', infer_datetime_format = True)
+df = pd.read_csv('zugfahrten.csv')
+logging.info('Rows found in file: %d', df.shape[0])
+logging.info('Begin validation of file')
+
+#Delete duplicates
+# TODO Numbers don't add up
+logging.info('Looking for duplicate rows')
+df_duplicates = df[df.duplicated(keep=False)]
+df_duplicates.sort_values(by=['Fahrtnummer', 'Fahrzeugnummer'])
+logging.info('Number of duplicates found: %d', df_duplicates.shape[0])
+#logging.info(df_duplicates.to_string())
+df.drop_duplicates(inplace=True)
+logging.info('Remaining rows after removing duplicates: %d', df.shape[0])
+
+# Removing rows with missing values
+logging.info('Looking for rows with missing values')
+null_mask = df.isnull().any(axis=1)
+null_rows = df[null_mask]
+logging.info('Number of rows with missing values found: %d', null_rows.shape[0])
+#logging.info("The following rows contain missing values and will be removed")
+if null_rows.shape[0] >0:
+    logging.info(null_rows.to_string())
 # Deleting rows with empty cells
-new_df = df.dropna()
-# Row count dropped from 26250 to 25755
-# Which rows were dropped? --> Log
-only_na = df[~df.index.isin(new_df.index)]
-
-new_df.info()
-
+df = df.dropna()
+logging.info('Remaining rows after removing missing values: %d', df.shape[0])
+ 
+logging.info('Converting Columns to appropriate data types and filtering out illegal values')
+logging.info('Abfahrtsdatum')
 # Convert different Date formats to YYYY-MM-DD - SettingWithCopyWarning
-new_df['Abfahrtsdatum'] = pd.to_datetime(new_df['Abfahrtsdatum'], format='mixed')
-# TODO hier muss ich vorher die falschen Zeilen finden, damit ich sie loggen kann
-new_df['Abfahrtszeit'] = pd.to_datetime(new_df['Abfahrtszeit'], format='mixed', errors='coerce')    
-# TODO hier muss ich vorher die falschen Zeilen finden, damit ich sie loggen kann
-new_df['Ankunftszeit'] = pd.to_datetime(new_df['Ankunftszeit'], format='mixed', errors='coerce')
-# TODO hier muss ich vorher die falschen Zeilen finden, damit ich sie loggen kann
-new_df['Zug id'] = pd.to_numeric(new_df['Zug id'], errors='coerce')
-new_df['Buchungskreis'] = pd.to_numeric(new_df['Buchungskreis'], errors='coerce')
-new_df['Entfernung km'] = pd.to_numeric(new_df['Entfernung km'], errors='coerce')
-new_df['Passagieranzahl'] = pd.to_numeric(new_df['Passagieranzahl'], errors='coerce')
-new_df['Abfahrtsbahnhof'] = new_df['Abfahrtsbahnhof'].astype(str)
-new_df['Ankunftsbahnhof'] = new_df['Ankunftsbahnhof'].astype(str)
-new_df = new_df.dropna()
+logging.info('Zeilen vor Umwandeln Abfahrtsdatum: %d', df.shape[0])
+df['Abfahrtsdatum'] = pd.to_datetime(df['Abfahrtsdatum'], format='mixed')
+logging.info('Zeilen nach Umwandeln Abfahrtsdatum: %d', df.shape[0])
+null_mask = df.isnull().any(axis=1)
+null_rows = df[null_mask]
+logging.info('Number of rows with invalid Abfahrtsatum found: %d', null_rows.shape[0])
+if null_rows.shape[0] > 0:
+    logging.info(null_rows.to_string())
+df = df.dropna()
+logging.info('Date 01.01.1900 will be treated as illegal date and removed')
+# TODO Log Rows with 1900-01-01
 
-# 22709 rows left 
+df.drop(df.loc[df['Abfahrtsdatum']==pd.to_datetime('1900-01-01')].index, inplace=True)
+logging.info('Rows after removing 01.01.1900: %d', df.shape[0])
 
-# Check Zug id for valid values
-# so kriegt man eine Liste der Werte die nicht numerisch sind
-# where values cant be coerced, they are treated as nulls.
-# non_numeric_zug_id = new_df[pd.to_numeric(new_df['Zug id'], errors='coerce').isnull()]['Zug id'].unique()
+logging.info('Abfahrtszeit')
+logging.info('Zeilen vor Umwandeln Abfahrtszeit: %d', df.shape[0])
+df['Abfahrtszeit'] = pd.to_datetime(df['Abfahrtszeit'], format='mixed', errors='coerce')    
+logging.info('Zeilen nach Umwandeln Abfahrtszeit: %d', df.shape[0])
+null_mask = df.isnull().any(axis=1)
+null_rows = df[null_mask]
+logging.info('Number of rows with invalid Abfahrtszeit found: %d', null_rows.shape[0])
+if null_rows.shape[0] > 0:
+    logging.info(null_rows.to_string())
+df = df.dropna()
 
-new_df.info()
+logging.info('Ankunftszeit')
+logging.info('Zeilen vor Umwandeln Ankunftszeit: %d', df.shape[0])
+df['Ankunftszeit'] = pd.to_datetime(df['Ankunftszeit'], format='mixed', errors='coerce')
+logging.info('Zeilen nach Umwandeln Abfahrtszeit: %d', df.shape[0])
+null_mask = df.isnull().any(axis=1)
+null_rows = df[null_mask]
+logging.info('Number of rows with invalid Ankunftszeit found: %d', null_rows.shape[0])
+if null_rows.shape[0] > 0:
+    logging.info(null_rows.to_string())
+df = df.dropna()
 
-#for index, row in df.iterrows():
-#    if not pd.to_numeric(row['Fahrtnummer'], errors='coerce'):
-#        print('Fahrtnummer ist nicht numerisch ' + row['Fahrtnummer'])
-#    elif not pd.to_numeric(row['Zug id'], errors='coerce'):
-#        print('Zug id ist nicht numerisch: ' + row['Zug id'])
-#
+logging.info('Zug id')
+logging.info('Zeilen vor Umwandeln Zug id: %d', df.shape[0])
+df['Zug id'] = pd.to_numeric(df['Zug id'], errors='coerce')
+logging.info('Zeilen nach Umwandeln Zug id: %d', df.shape[0])
+null_mask = df.isnull().any(axis=1)
+null_rows = df[null_mask]
+logging.info('Number of rows with invalid Zug id found: %d', null_rows.shape[0])
+if null_rows.shape[0] > 0:
+    logging.info(null_rows.to_string())
+df = df.dropna()
 
-#TODO in Minuten!
-new_df['Reisezeit'] = (new_df['Ankunftszeit']-new_df['Abfahrtszeit']).astype('timedelta64[s]')
-print(new_df['Reisezeit'])
-new_df['Reisezeit Stunden'] = new_df['Reisezeit'] / np.timedelta64(1, 'h')
-print(new_df['Reisezeit Stunden']) 
-print(new_df['Entfernung km'])
-new_df['Durchschnittsgeschwindigkeit'] = (new_df['Entfernung km']/new_df['Reisezeit Stunden'])
-print(new_df['Durchschnittsgeschwindigkeit'])
+logging.info('Zug id')
+logging.info('Zeilen vor Umwandeln Zug id: %d', df.shape[0])
+df['Buchungskreis'] = pd.to_numeric(df['Buchungskreis'], errors='coerce')
+logging.info('Zeilen nach Umwandeln Zug id: %d', df.shape[0])
+null_mask = df.isnull().any(axis=1)
+null_rows = df[null_mask]
+logging.info('Number of rows with invalid Zug id found: %d', null_rows.shape[0])
+if null_rows.shape[0] > 0:
+    logging.info(null_rows.to_string())
+df = df.dropna()
 
-#TODO die Struktur hat kein richtiges Format
-gesamtzahl_df =  new_df.groupby(['Zug id', 'Abfahrtsdatum'])['Passagieranzahl'].sum()
-gesamtzahl_df.info()
-print(gesamtzahl_df)
+logging.info('Entfernung km')
+logging.info('Zeilen vor Umwandeln Entfernung km: %d', df.shape[0])
+df['Entfernung km'] = pd.to_numeric(df['Entfernung km'], errors='coerce')
+logging.info('Zeilen nach Umwandeln Entfernung km: %d', df.shape[0])
+null_mask = df.isnull().any(axis=1)
+null_rows = df[null_mask]
+logging.info('Number of rows with invalid Entfernung km found: %d', null_rows.shape[0])
+if null_rows.shape[0] > 0:
+    logging.info(null_rows.to_string())
+df = df.dropna()
+
+logging.info('Passagierzahl')
+logging.info('Zeilen vor Umwandeln Passagierzahl: %d', df.shape[0])
+df['Passagieranzahl'] = pd.to_numeric(df['Passagieranzahl'], errors='coerce')
+logging.info('Zeilen nach Umwandeln Passagierzahl: %d', df.shape[0])
+null_mask = df.isnull().any(axis=1)
+null_rows = df[null_mask]
+logging.info('Number of rows with invalid Passagierzahl found: %d', null_rows.shape[0])
+if null_rows.shape[0] > 0:
+    logging.info(null_rows.to_string())
+df = df.dropna()
+
+logging.info('Abfahrtsbahnhof')
+logging.info('Zeilen vor Umwandeln Abfahrtsbahnhof: %d', df.shape[0])
+df['Abfahrtsbahnhof'] = df['Abfahrtsbahnhof'].astype(str)
+logging.info('Zeilen nach Umwandeln Abfahrtsbahnhof: %d', df.shape[0])
+null_mask = df.isnull().any(axis=1)
+null_rows = df[null_mask]
+logging.info('Number of rows with invalid Abfahrtsbahnhof found: %d', null_rows.shape[0])
+if null_rows.shape[0] > 0:
+    logging.info(null_rows.to_string())
+df = df.dropna()
+
+logging.info('Ankunftsbahnhof')
+logging.info('Zeilen vor Umwandeln Ankunftsbahnhof: %d', df.shape[0])
+df['Ankunftsbahnhof'] = df['Ankunftsbahnhof'].astype(str)
+logging.info('Zeilen nach Umwandeln Ankunftsbahnhof: %d', df.shape[0])
+null_mask = df.isnull().any(axis=1)
+null_rows = df[null_mask]
+logging.info('Number of rows with invalid Ankunftsbahnhof found: %d', null_rows.shape[0])
+if null_rows.shape[0] > 0:
+    logging.info(null_rows.to_string())
+df = df.dropna()
+
+logging.info('Starting calculations on data')
+
+logging.info('Reisezeit in Minuten')
+df['Reisezeit'] = (df['Ankunftszeit']-df['Abfahrtszeit'])
+df['Reisezeit'] = df['Reisezeit'].dt.total_seconds()/60.0
+
+logging.info('Adding Reisezeit in Stunden')
+df['Reisezeit Stunden'] = df['Reisezeit'] / 60.0
+
+logging.info('Adding Durchschnittsgeschwindigkeit')
+df['Durchschnittsgeschwindigkeit'] = (df['Entfernung km']/df['Reisezeit Stunden'])
+
+#TODO Gesamtzahl der Passagiere pro Zug pro Tag - Abfahrtsdatum? Abfahrtszeit? Nachfragen
+#gesamtzahl_df =  df.groupby(['Zug id', 'Abfahrtsdatum'])['Passagieranzahl'].sum()
+
 
 # store to sqlite
 conn = sqlite3.connect('zugfahrten.sqlite')
-new_df.to_sql('zugfahrten', conn, if_exists='replace', index=False)
+df.to_sql('zugfahrten', conn, if_exists='replace', index=False)
+
+
+
