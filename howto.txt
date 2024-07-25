@@ -1,0 +1,18 @@
+##########################################################
+### Technisches Assessment - Data Engineer / ETL
+### Brigitte Kupka
+### brigitte.kupka@gmx.at
+##########################################################
+
+Laden und Transformation der Daten mit Python:
+zugfahrten.py -  Zur Ausführung muss sich zugfahrten.csv im selben Ordner befinden
+alles in ein dataframe laden, Bereinigung und log in CSV gemäß Aufgabenstellung
+Output: zugfahrten_errors.csv enthält alle gelöschten Zeilen und den Grund der Löschung
+	zugfahrten.sqlite
+	zugfahrten_transformed.csv enthält den gleichen Datenstand wie zugfahrten.sqlite als CSV.
+
+zugfahrten_add_code.py - Zur Ausführung muss sich zugfahrten_transformed.csv im selben Ordner befinden.
+Analysen der bereinigten Daten, Ausreißer und sonstige Bemerkungen
+
+
+Die SQL Abfragen für Punkt 4 der Aufgabenstellung befinden sich in zugfahrten.sql

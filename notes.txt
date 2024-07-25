@@ -1,5 +1,8 @@
 Beobachtungen zugfahrten.csv
 * Fahrtnummer und Zug ID sind immer gleich
-* Abfahrtsdatum weicht stark vom Datum im Abfahrtszeit und Ankunftszeit ab. Verwende das Datum aus Abfahrtszeit bzw. Ankunftszeit nicht, sondern nur das Datum in Abfahrtsdatum
-* Abfahrtsdatum nicht einheitlich innerhalb einer Fahrtnummer
+* Abfahrtsdatum weicht stark vom Datum im Abfahrtszeit und Ankunftszeit ab. 
+  --> Verwende das Datum aus Abfahrtszeit bzw. Ankunftszeit nicht, sondern nur das Datum in Abfahrtsdatum, Behandle die anderen Spalten
+        nur als Zeitinformation
+* Abfahrtsdatum nicht einheitlich innerhalb einer Fahrtnummer -- Entscheidung welches richtig ist, nur auf Basis der Häufigkeit?
 * Abfahrtsdatum 1.1.1900 wird als ungültig behandeelt
+* 
