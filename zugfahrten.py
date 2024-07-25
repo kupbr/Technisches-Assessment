@@ -27,7 +27,7 @@ df = pd.read_csv('zugfahrten.csv')
 ### 2 - TRANSFORM ###################################
 #####################################################
 ###
-### Delete duplicates and write duplicate rows to csv log
+### Lösche Duplikate und schreibe die betroffenen Zeilen in das CSV Log
 ###
 df_duplicates = df[df.duplicated(keep='first')]
 df_duplicates = df_duplicates.assign(grund='Duplicate')
@@ -35,11 +35,12 @@ df_duplicates.to_csv('zugfahrten_errors.csv',mode='a')
 df.drop_duplicates(inplace=True)
 
 ###
-### Remove rows with missing values 
+### Entferne Zeilen mit fehlenden Werten
 ###
-# To be able to log the deleted rows with reason for deletion,
-# a boolean mask is created to find the to be deleted rows in the dataframe, mark them and write them to csv log
-# only after logging, the rows are dropped from the original dataframe
+# Damit die gelöschten Zeilen mit dem Grund der Löschung ins Log geschrieben werden können,
+# wird eine bool Maske erstellt, die es ermöglicht die betroffenen Zeilen im Dataframe zu finden,
+# sie zu markieren und sie in das CSV Log zu schreiben.
+# Erst nachdem sie so geloggt wurden, werden sie aus dem eigentlichen dataframe gelöscht.
 
 null_mask = df.isnull().any(axis=1)
 null_rows = df[null_mask]
@@ -49,27 +50,30 @@ if null_rows.shape[0] >0:
 df = df.dropna()
  
 ###
-### Convert datatypes in dataframe
+### Datentypen im Dataframe umwandeln
 ###
 #
-# Attempting to convert Abfahrtsdatum to datetime
-# df_temp is needed so that I can write the unchanged rows to the csv-log.
-# since null values were already removed in the previous step, 
-# df now only has empty cells where a value could not be converted
-# mark the rows and save them to the csv log
+# Versuche Abfahrtsdatum in datetime umzuwandeln - bei Werten die fehlschlagen, wird der Wert gelöscht.
+# df_temp wird dafür verwendet, die unveränderten Zeilen mit illegalen Werten in das CSV Log schreiben zu können
+# Nachdem die Werte, die schon zu beginn gefehlt haben schon im vorigen Schritt aus df entfernt wurden, 
+# sind die leeren Zellen in df jetzt genau die, wo der Wert nicht auf den gewünschten Datentyp geändert werden konnte.
+# Die Zeilen werden markiert und in das CSV Fehlerlog geschrieben.
+# Diese Schritte wiederholen sich für alle Variablen/Typumwandlungen einzeln, damit der Grund der Löschung im Log jeweils
+# informativ ist.
+
 df_temp = df
 df_temp['Abfahrtsdatum'] = pd.to_datetime(df['Abfahrtsdatum'], format='mixed')
 log_invalid_rows('Abfahrtsdatum could not be converted to datetime')
 df = df_temp.dropna()
 
-# Date 01.01.1900 will be treated as illegal date
-# The rows are written to the csv log and removed from df
+# Das Datum 01.01.1900 wird als ungültiges Datum behandelt
+# Die Zeilen werden in das CSV Log geschrieben und aus dem dataframe entfernt
 illegal_date_rows = df[df["Abfahrtsdatum"] ==pd.to_datetime('1900-01-01')]
 illegal_date_rows = illegal_date_rows.assign(grund='Abfahrtsdatum was 01.01.1900')
 illegal_date_rows.to_csv('zugfahrten_errors.csv',mode='a', header=False)
 df.drop(df.loc[df['Abfahrtsdatum']==pd.to_datetime('1900-01-01')].index, inplace=True)
 
-# angenommenes Datum des Exports 23.07.2024
+# Annahme: Datum des Exports 23.07.2024 - wenn man davon ausgeht, so gibt es ungültige Abfahrtsdaten in der Zukunft
 # Abfahrtsdatum in der Zukunft wird entfernt
 illegal_date_rows = df[df["Abfahrtsdatum"] >pd.to_datetime('2024-07-23')]
 illegal_date_rows = illegal_date_rows.assign(grund='Abfahrtsdatum was in the future')
@@ -78,7 +82,7 @@ df.drop(df.loc[df['Abfahrtsdatum']>pd.to_datetime('2024-07-23')].index, inplace=
 
 # Versuche Abfahrtszeit in datetime umzuwandeln
 # Anmerkung: Abfahrtszeit enthält ein Datum, das vom Abfahrtsdatum stark abweicht
-# Ich nehme an, das ist Prozessbedingt und nicht relevant
+# Ich nehme an, das ist Prozessbedingt und nicht relevant, bzw. verwende das Datum nur für die Berechnung der Reisedauer
 # Umwandeln in datetime, ungültige Zeilen loggen, leere Zeilen löschen, wo die Konvertierung fehlgeschlagen ist
 df_temp['Abfahrtszeit'] = pd.to_datetime(df['Abfahrtszeit'], format='mixed', errors='coerce')    
 log_invalid_rows('Abfahrtszeit could not be converted to datetime')
@@ -169,6 +173,3 @@ df.to_sql('zugfahrten', conn, if_exists='replace', index=False)
 
 # Dataframe nach Transformation auch für weitere Betrachtungen in neues csv schreiben
 df.to_csv('zugfahrten_transformed.csv', index=False)
-
-
-

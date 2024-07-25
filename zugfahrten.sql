@@ -89,7 +89,7 @@ from zugfahrten z;
 -- hier liegt auch nahe, dass es einige fehlerhafte Daten gibt, da die Datumswerte innerhalb einer Zugfahrt bei den verschiedenen
 -- Fahrzeugen nicht einheitlich sind. Das zu korrigieren ist ohne weiteres Wissen schwierig, da man rein aufgrund der Häufigkeit eines Datums
 -- ableiten könnte welches das Richtige ist. (wenn bei 9 Fahrzeugen ein Datum steht und bei 1 ein anderes, dann ist es zwar naheliegend,
--- dass das eine Datum falsch ist, aber ich würde es inhaltlich noch klären wollen
+-- dass das eine Datum falsch ist, aber ich würde es inhaltlich noch klären wollen, bevor ich so einen großen Eingriff mache
 select min(Abfahrtsdatum), max(Abfahrtsdatum)
 from zugfahrten z 
 
@@ -110,8 +110,11 @@ from zugfahrten z
 where z.Durchschnittsgeschwindigkeit  > 200
 order by z.Durchschnittsgeschwindigkeit  desc
 
--- 984 Züge über 200km/h im Durchschnitt sind eine Menge - wie einheitlich ist die Distanz zwischen den gleichen Bahnhöfen
+-- 984 Züge über 200km/h im Durchschnitt sind eine Menge - wieso bzw ist es eher die Reisedauer oder die Entfernung, die die Probleme macht?
+-- wie einheitlich ist die Distanz zwischen den gleichen Bahnhöfen?
 -- für welche Bahnhöfe gibt es unterschiedilche Distanzen? -- Beide Richtungen werden ignoriert
 select count(*), z.Abfahrtsbahnhof , z.Ankunftsbahnhof , z."Entfernung km" from zugfahrten z 
 group by z.Abfahrtsbahnhof , z.Ankunftsbahnhof , z."Entfernung km" 
 order by 2,3
+
+ -- Es wäre interessant, sich das noch näher anzusehen, aber aus Zeitgründen wird darauf verzichtet

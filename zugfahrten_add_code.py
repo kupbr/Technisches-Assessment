@@ -30,8 +30,8 @@ df = pd.read_csv('zugfahrten_transformed.csv')
 
 printBoxPlot("Messung")
 # --> die meisten Werte der Messung sind positiv zwischen 1000 und 5000. 
-# Es gibt eine Anzahl Werte in diesem Bereich mit negativem Vorzeichen
-# Inhaltliche Klärung, wie diese Werte entstanden sind, oder ob es sich um Messfehler handelt ist notwendig
+# Es gibt eine Anzahl Werte in diesem Bereich aber mit negativem Vorzeichen
+# Inhaltliche Klärung, wie diese Werte entstanden sind bzw. ob sie gültig sind, oder ob es sich um Messfehler handelt ist notwendig
 
 printBoxPlot("Reisezeit")
 # --> es gibt keine Ausreißer, nachdem die Abfahrts- und Ankunftszeiten in der Zukunft gelöscht wurden
@@ -44,12 +44,12 @@ printBoxPlot("Durchschnittsgeschwindigkeit")
 #       Geschwindigkeit sichtbar werden, wenn die beiden Daten nicht plausibel zueinanderpassen, aber einzeln betrachtet 
 #       plausibel erscheinen
 
-# Ankunftsbanhnhof und Abfahrtsbahnhof sehen auf den ersten Blick sehr sauber aus. 
+# Ankunftsbanhnhof und Abfahrtsbahnhof sehen auf den ersten Blick sehr sauber aus 
 # Gibt es eventuell doch Tippfehler, wo die Bahnhöfe zusammengefasst werden könnten?
 # difflib.get_close_matches kann Kandidaten für eine gründlichere Bereinigung ausgeben
-# Bsp: Williamshire: Williamshire Williamsshire
-#      West Sarah: West Sarah West Sara
-#      Kristineshire: Kristineshire Kristinshire
+# Bsp: Williamshire: Williamshire, Williamsshire
+#      West Sarah: West Sarah, West Sara
+#      Kristineshire: Kristineshire, Kristinshire
 #       .... 
 
 bahnhoefe = df[["Abfahrtsbahnhof"]]
@@ -58,7 +58,8 @@ bahnhoefe.sort_values(by=['Abfahrtsbahnhof'], inplace=True)
 #bahnhoefe = bahnhoefe.head(1000)
 for index, row in bahnhoefe.iterrows():
     close_matches = difflib.get_close_matches(row["Abfahrtsbahnhof"], bahnhoefe["Abfahrtsbahnhof"], 5, 0.9)
-    # falls mehr als ein identisches match gefunden wurde, kann man sich die kandidaten ansehen:
+    # falls mehr als ein (eines ist immer das identische, da ich jeden Wert mit der kompletten Liste vergleiche) 
+    # match gefunden wurde, kann man sich die kandidaten ansehen. 
     #if len(close_matches) > 1:
     #   print(row["Abfahrtsbahnhof"] + ': ' + ' '.join([str(elem) for elem in close_matches]))
    
