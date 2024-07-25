@@ -4,15 +4,26 @@
 ### brigitte.kupka@gmx.at
 ##########################################################
 
-Laden und Transformation der Daten mit Python:
-zugfahrten.py -  Zur Ausführung muss sich zugfahrten.csv im selben Ordner befinden
-alles in ein dataframe laden, Bereinigung und log in CSV gemäß Aufgabenstellung
-Output: zugfahrten_errors.csv enthält alle gelöschten Zeilen und den Grund der Löschung
-	zugfahrten.sqlite
-	zugfahrten_transformed.csv enthält den gleichen Datenstand wie zugfahrten.sqlite als CSV.
+Das Laden und die Transformation der Daten wurden mit Python realisiert:
+- zugfahrten.py -  	  Zur Ausführung muss sich zugfahrten.csv im selben Ordner befinden
+		  	  Die Daten werden gelesen, bereinigt und ein log in einem CSV gemäß Aufgabenstellung geschrieben
+		   	  Output: zugfahrten_errors.csv enthält alle gelöschten Zeilen, sowie den Grund der Löschung
+			   	  zugfahrten.sqlite - die bereinigten Daten in einer SQLite DB/Tabelle
+			   	  zugfahrten_transformed.csv enthält den gleichen Datenstand wie zugfahrten.sqlite als CSV
+			  Anm: nach jeder Ausführung solllte das error-log gelöscht werden
 
-zugfahrten_add_code.py - Zur Ausführung muss sich zugfahrten_transformed.csv im selben Ordner befinden.
-Analysen der bereinigten Daten, Ausreißer und sonstige Bemerkungen
+- zugfahrten_add_code.py - Zur Ausführung muss sich zugfahrten_transformed.csv im selben Ordner befinden.
+			   Analysen der bereinigten Daten, Ausreißer und sonstige Bemerkungen
 
 
-Die SQL Abfragen für Punkt 4 der Aufgabenstellung befinden sich in zugfahrten.sql
+- zugfahrten.sql -	   Enthält die SQL Abfragen für Punkt 4 der Aufgabenstellung.
+			   Nach erfolgreicher Verbindung mit zugfahrten.sqlite sind die Abfragen einzeln auszuführen
+
+
+- zugfahrten.knmf - 	   Knime Workflow, der die erfolgten Transformationen aus zugfahrten.py bzw. laut Aufgabenstellung nachstellt.
+			   Die Datei zugfahrten.csv sollte nach Öffnen des Workflows in das data Verzeichnis des Workflows abgelegt werden
+			   bzw. der Pfad im CSV Reader angepasst werden.
+
+
+Das Git Repository befindet sich auch unter:
+https://github.com/kupbr/Technisches-Assessment.git
